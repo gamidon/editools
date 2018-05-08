@@ -54,7 +54,11 @@
     <Compile Include="EdiRepetitionTest.cs" />
     <Compile Include="EdiSegmentTest.cs" />
     <Compile Include="EdiValueTest.cs" />
+    <Compile Include="GoodShipDexterAxelEdi.cs" />
+    <Compile Include="GoodShipEdiLineTypes.cs" />
+    <Compile Include="Info.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReadAndWriteEdiX12.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EdiTools\EdiTools.csproj">

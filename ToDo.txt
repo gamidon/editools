@@ -1,0 +1,5 @@
+Code to take GoodShipInvoiceData to EDI output.
+
+Invoice Report 
+
+Code to Parse invoice report

@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DomainTypes.cs" />
     <Compile Include="EdiComponent.cs" />
     <Compile Include="EdiElement.cs" />
     <Compile Include="EdiMapping.cs" />

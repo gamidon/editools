@@ -461,7 +461,7 @@ namespace EdiTools
         /// Serialize this EdiDocument to a TextWriter.
         /// </summary>
         /// <param name="writer">A TextWriter that the EdiDocument will be written to.</param>
-        public void Save(TextWriter writer)
+        public void Save(TextWriter writer, bool toStringFunctionCall=false)
         {
             var options = new EdiOptions(Options);
             foreach (EdiSegment segment in Segments)
@@ -476,7 +476,7 @@ namespace EdiTools
                         options.ComponentSeparator = segment[16][0];
                 }
                 writer.Write(segment.ToString(options));
-                if (options.AddLineBreaks)
+                if (options.AddLineBreaks && !toStringFunctionCall)
                     writer.WriteLine();
             }
             writer.Flush();
@@ -489,7 +489,7 @@ namespace EdiTools
         public override string ToString()
         {
             var buffer = new StringWriter();
-            Save(buffer);
+            Save(buffer, true);
             return buffer.ToString();
         }
     }
