@@ -26,6 +26,25 @@ namespace EdiTools.Tests
             this[10] = "035";   //Delivered Date
             this[11] = Info.GoodShipId;
         }
+        public EdiSegmentB3(GoodShipInvoiceData invoiceData)
+        : base("B3")
+        {
+            this[01] = "";
+            this[02] = invoiceData.InvoiceNumber.ToString();
+            this[03] = invoiceData.ShipmentNumber.ToString();
+            this[04] = invoiceData.PaymentMethod.ToString();
+            this[05] = invoiceData.WeightUnit.ToString();
+            this[06] = EdiValue.Date(8, invoiceData.InvoiceDate);
+            if (invoiceData.NetAmountDue.ToString().Length > 12)
+            {
+                throw new ArgumentException(nameof(invoiceData.NetAmountDue));
+            }
+            this[07] = EdiValue.Numeric(2, invoiceData.NetAmountDue);
+            this[08] = "";
+            this[09] = EdiValue.Date(8, invoiceData.DeliveryDate);
+            this[10] = "035";   //Delivered Date
+            this[11] = Info.GoodShipId;
+        }
     }
     public class EdiSegmentC3 : EdiSegment
     {
@@ -34,15 +53,20 @@ namespace EdiTools.Tests
         {
             this[01] = cc.ToString();
         }
+        public EdiSegmentC3(GoodShipInvoiceData invoiceData)
+            : base("C3")
+        {
+            this[01] = invoiceData.CurrencyCode.ToString();
+        }
     }
-    public class EdiSegmentDtm: EdiSegment
-    {     
+    public class EdiSegmentDtm : EdiSegment
+    {
         public EdiSegmentDtm(DateTimeQualifier dateTimeQualifier, DateTime dateTime)
             : base("DTM")
         {
             this[01] = ((int)dateTimeQualifier).ToString();
             this[02] = EdiValue.Date(8, dateTime);
-            this[03] = EdiValue.Time(4,dateTime);
+            this[03] = EdiValue.Time(4, dateTime);
         }
     }
     public class EdiSegmentG62 : EdiSegment
@@ -50,7 +74,7 @@ namespace EdiTools.Tests
         public EdiSegmentG62(DateQualifier dateQualifier, DateTime date)
             : base("G62")
         {
-            int val = (int) dateQualifier;
+            int val = (int)dateQualifier;
             this[01] = val.ToString();
             this[02] = EdiValue.Date(8, date);
         }
@@ -162,6 +186,10 @@ namespace EdiTools.Tests
             this[04] = EdiValue.Numeric(2, charge);
             this[08] = specialChargeAllowanceCode.ToString();
         }
+        public void AddSpecialChargeAllowanceCode(SpecialChargeAllowanceCode specialChargeAllowanceCode)
+        {
+            this[08] = specialChargeAllowanceCode.ToString();
+        }
     }
     public class EdiSegmentL3 : EdiSegment
     {
@@ -203,23 +231,34 @@ namespace EdiTools.Tests
         }
         public List<EdiSegment> GetSegments => _segments;
     }
+    public class N1Section
+    {
+        private readonly List<EdiSegment> _segments = new List<EdiSegment>();
+        public N1Section(GoodShipInvoiceData invoiceData)
+        {
+            _segments.Add(new EdiSegmentN1(EntityIdentifierCode.SE, invoiceData.OrgSE));
+            _segments.Add(new EdiSegmentN1(EntityIdentifierCode.BY, invoiceData.OrgBY));
+            _segments.Add(new EdiSegmentN1(EntityIdentifierCode.SF, invoiceData.OrgSF));
+            _segments.Add(new EdiSegmentN3(invoiceData.OrgSF));
+            _segments.Add(new EdiSegmentN4(invoiceData.OrgSF));
+            _segments.Add(new EdiSegmentN1(EntityIdentifierCode.ST, invoiceData.OrgST));
+            _segments.Add(new EdiSegmentN3(invoiceData.OrgST));
+            _segments.Add(new EdiSegmentN4(invoiceData.OrgST));
+        }
+        public List<EdiSegment> GetSegments => _segments;
+    }
     public class EdiSegmentN1 : EdiSegment
     {
         public EdiSegmentN1(EntityIdentifierCode entityIdentifierCode, Organization organization)
-            : base("N1")
+             : base("N1")
         {
             this[01] = entityIdentifierCode.ToString();
             this[02] = organization.Name.ToString();
-        }
-        public EdiSegmentN1(EntityIdentifierCode entityIdentifierCode, Organization organization,
-                            IdentificationCodeQualifier identificationCodeQualifier,
-                            IdentificationCode identificationCode)
-            : base("N1")
-        {
-            this[01] = entityIdentifierCode.ToString();
-            this[02] = organization.Name.ToString();
-            this[03] = ((int)identificationCodeQualifier).ToString();
-            this[04] = identificationCode.ToString();
+            if (organization.IdentificationCodeQualifier != IdentificationCodeQualifier.UnKnown)
+            {
+                this[03] = ((int)organization.IdentificationCodeQualifier).ToString();
+                this[04] = organization.IdentificationCode.ToString();
+            }
         }
     }
     public class EdiSegmentN3 : EdiSegment
@@ -240,12 +279,12 @@ namespace EdiTools.Tests
             this[02] = organization.StateOrProvince.ToString();
             this[03] = organization.PostalCode.ToString();
         }
- 
+
     }
     public class EdiSegmentN7 : EdiSegment
     {
         public EdiSegmentN7(EquipmentInitial equipmentInitial, EquipmentNumber equipmentNumber, EdiValueR_1_10 weight,
-                            WeighQualifier weighQualifier, EdiValueN0_3_8 tareWeight, EdiValueR_1_8 volume, 
+                            WeighQualifier weighQualifier, EdiValueN0_3_8 tareWeight, EdiValueR_1_8 volume,
                             VolumeUnitQualifier volumeUnitQualifier)
             : base("N7")
         {
@@ -265,6 +304,12 @@ namespace EdiTools.Tests
         {
             this[01] = "4C";
             this[02] = referenceIdentification.ToString();
+        }
+        public EdiSegmentN9_4C(GoodShipInvoiceData invoiceData)
+            : base("N9")
+        {
+            this[01] = "4C";
+            this[02] = invoiceData.ReferenceIdentification.ToString();
         }
     }
     public class EdiSegmentR2 : EdiSegment
@@ -288,12 +333,20 @@ namespace EdiTools.Tests
             this[03] = "";
             this[04] = transportationMode.ToString();
         }
+        public EdiSegmentR3(GoodShipInvoiceData invoiceData)
+            : base("R3")
+        {
+            this[01] = Info.GoodShipId;
+            this[02] = "B";
+            this[03] = "";
+            this[04] = invoiceData.TransportationMode.ToString();
+        }
     }
     public class EdiSegmentR4 : EdiSegment
     {
-        public EdiSegmentR4(PortOrTerminalCode portOrTerminalCode, LocationQualifier locationQualifier, 
-                            LocationIdentifier locationIdentifier, PortName portName, CountryCode countryCode, 
-                            TerminalName terminalName,StateOrProvince stateOrProvince)
+        public EdiSegmentR4(PortOrTerminalCode portOrTerminalCode, LocationQualifier locationQualifier,
+                            LocationIdentifier locationIdentifier, PortName portName, CountryCode countryCode,
+                            TerminalName terminalName, StateOrProvince stateOrProvince)
             : base("R4")
         {
             this[01] = portOrTerminalCode.ToString();
@@ -355,7 +408,7 @@ namespace EdiTools.Tests
     }
     public class EdiSegmentV1 : EdiSegment
     {
-        public EdiSegmentV1(VesselCode vesselCode, VesselName vesselName, CountryCode countryCode, FlightOrVoyageNumber flightOrVoyageNumber,TransportationMethodOrTypeCode typeCode = TransportationMethodOrTypeCode.O)
+        public EdiSegmentV1(VesselCode vesselCode, VesselName vesselName, CountryCode countryCode, FlightOrVoyageNumber flightOrVoyageNumber, TransportationMethodOrTypeCode typeCode = TransportationMethodOrTypeCode.O)
             : base("V1")
         {
             this[01] = vesselCode.ToString();

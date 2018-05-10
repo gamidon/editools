@@ -134,6 +134,7 @@ namespace EdiTools.Tests
     }
     public enum IdentificationCodeQualifier
     {
+        UnKnown =0, //Unused value
         GoodShip = 2,
         DexterAxel = 92,
         FA //Other Party
